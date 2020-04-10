@@ -80,7 +80,7 @@ class ModelNet(object):
     def __getitem__(self, index):
         """Returns the item at index idx. """
         category = torch.tensor(self.cat_idxs[index], dtype=torch.long, device=self.device)
-        data = TriangleMesh.from_off(self.filepaths[index])
+        data = TriangleMesh.from_mesh(self.filepaths[index])
         data.to(self.device)
         if self.transform:
             data = self.transform(data)
