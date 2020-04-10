@@ -302,7 +302,7 @@ class Mesh():
         # For .off files, metadata is the first valid line of each file
         # (neglecting the "OFF" header).
         
-        /*vertices = torch.FloatTensor(np.array(vertices, dtype=np.float32))
+        r'''vertices = torch.FloatTensor(np.array(vertices, dtype=np.float32))
         faces = torch.LongTensor(np.array(faces, dtype=np.int64))
 
         if enable_adjacency:
@@ -316,7 +316,7 @@ class Mesh():
                 None 
         return self(vertices, faces, None, None, None, edges,
                     edge2key, vv, vv_count, vf, vf_count, ve, ve_count, ff, ff_count,
-                    ef, ef_count, ee, ee_count)*/
+                    ef, ef_count, ee, ee_count)'''
         return trimesh
 
     @classmethod
