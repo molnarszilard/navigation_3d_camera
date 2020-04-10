@@ -101,13 +101,9 @@ public:
     std::vector<int> parts = gp3.getPartIDs();
     std::vector<int> states = gp3.getPointStates();
   
-    sensor_msgs::PointCloud2 object_msg;
-    //PointCloud object_cloud;
-    pcl::PolygonMesh::Ptr object_cloud;
-    object_cloud.reset(&triangles);
-    pcl::toROSMsg(*object_cloud.get(),object_msg);
-
-    pub_.publish(object_msg);
+    sensor_msgs::PointCloud2 output;
+    pcl_conversions::fromPCL( triangles.cloud, output );
+    pub_.publish(output);
   }
 
 private:
