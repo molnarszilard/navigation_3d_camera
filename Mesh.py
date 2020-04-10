@@ -284,11 +284,25 @@ class Mesh():
         read_vertices = 0
         read_faces = 0
         read_edgs = 0
+
+        pcd = pcl.PCLPointCloud2(point_cloud.to_array())
+        pcd.estimate_normals()
+        distances = pcd.compute_nearest_neighbor_distance()
+        avg_dist = np.mean(distances)
+        radius = 1.5 * avg_dist   
+
+        mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(
+           pcd,
+           o3d.utility.DoubleVector([radius, radius * 2])
+
+        trimesh = trimesh.Trimesh(np.asarray(mesh.vertices), np.asarray(mesh.triangles),
+                          vertex_normals=np.asarray(mesh.vertex_normals))
         # Flag to indicate whether or not metadata (number of vertices,
         # number of faces, (optionally) number of edges) has been read.
         # For .off files, metadata is the first valid line of each file
         # (neglecting the "OFF" header).
-        vertices = torch.FloatTensor(np.array(vertices, dtype=np.float32))
+        
+        /*vertices = torch.FloatTensor(np.array(vertices, dtype=np.float32))
         faces = torch.LongTensor(np.array(faces, dtype=np.int64))
 
         if enable_adjacency:
@@ -300,7 +314,11 @@ class Mesh():
                 ff_count, ee, ee_count, ef, ef_count = None, None, None, \
                 None, None, None, None, None, None, None, None, None, None, \
                 None 
-    
+        return self(vertices, faces, None, None, None, edges,
+                    edge2key, vv, vv_count, vf, vf_count, ve, ve_count, ff, ff_count,
+                    ef, ef_count, ee, ee_count)*/
+        return trimesh
+
     @classmethod
     def from_mesh(self, filename: str,
                  enable_adjacency: Optional[bool] = False):
@@ -315,16 +333,10 @@ class Mesh():
         rospy.init_node('listener', anonymous=True)
 
         #rospy.Subscriber(filename, PointCloud2, callback)
-        rospy.Subscriber("pcl_meshtriangle", PointCloud2, callback)
+        return rospy.Subscriber("pcl_meshtriangle", PointCloud2, callback)
 
         # spin() simply keeps python from exiting until this node is stopped
         #rospy.spin()
-        
-
-        return self(vertices, faces, None, None, None, edges,
-                    edge2key, vv, vv_count, vf, vf_count, ve, ve_count, ff, ff_count,
-                    ef, ef_count, ee, ee_count)
-
 
     @staticmethod
     def _cuda_helper(tensor):
