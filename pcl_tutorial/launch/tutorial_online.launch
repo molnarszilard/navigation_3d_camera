@@ -11,6 +11,10 @@
  <node pkg="pcl_tutorial" type="plane_segmentation_node" name="plane_segmentation_node" output="screen" >
 <remap from="point_cloud_in" to="/pf_out" />
 </node>
+ 
+  <node pkg="pcl_tutorial" type="trianglemesh_node" name="trianglemesh_node" output="screen" >
+<remap from="pf_out" to="/pcl_meshtriangle" />
+</node>
 
  <node pkg="rviz" type="rviz" name="rviz" output="screen" args="-d $(find pcl_tutorial)/cfg/rviz.rviz"/>
 
