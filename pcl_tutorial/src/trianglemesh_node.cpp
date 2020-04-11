@@ -23,6 +23,7 @@
 #include <tf2_eigen/tf2_eigen.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl/io/vtk_io.h>
 
 class TriangleMeshNode
 {
@@ -36,11 +37,11 @@ public:
 
     pub_ = nh_.advertise<sensor_msgs::PointCloud2>("pcl_meshtriangle",1); // set tpoic name to publish
     // set topic name from receive, 'pf_out' - passthrough filter, 'cloud_pcd' - from file, 'point_cloud_in' - camera live feed
-    sub_ = nh_.subscribe ("pf_out", 1,  &TriangleMeshNode::cloudCallback, this); 
+    sub_ = nh_.subscribe ("cloud_pcd", 1,  &TriangleMeshNode::cloudCallback, this); 
     
            // "~" means, that the node hand is opened within the private namespace (to get the "own" paraemters)
     ros::NodeHandle private_nh("~");
-   
+    ros::spin();
   }
 
   ~TriangleMeshNode() {}
@@ -96,7 +97,7 @@ public:
     gp3.setInputCloud (cloud_with_normals);
     gp3.setSearchMethod (tree2);
     gp3.reconstruct (triangles);
-
+    pcl::io::saveVTKFile("/home/szilard/catkin_ws/src/pcl_tutorial/src/mesh.vtk", triangles); 
     // Additional vertex information
     std::vector<int> parts = gp3.getPartIDs();
     std::vector<int> states = gp3.getPointStates();
@@ -104,6 +105,8 @@ public:
     sensor_msgs::PointCloud2 output;
     pcl_conversions::fromPCL( triangles.cloud, output );
     pub_.publish(output);
+
+    
   }
 
 private:
@@ -118,7 +121,6 @@ int main (int argc, char** argv)
   ros::init (argc, argv, "trianglemesh_node");
 
   TriangleMeshNode tm;
-
-  ros::spin();
+  //ros::spin();
 }
 
