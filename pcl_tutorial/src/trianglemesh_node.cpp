@@ -25,6 +25,16 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/io/vtk_io.h>
 
+
+#include <pcl/PolygonMesh.h>
+#include <pcl_msgs/PolygonMesh.h>
+
+#include <geometry_msgs/TransformStamped.h>
+#include <ros/package.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/point_cloud2_iterator.h>
+#include <shape_msgs/Mesh.h>
+
 class TriangleMeshNode
 {
 public:
@@ -32,12 +42,15 @@ public:
   typedef pcl::PointCloud<Point> PointCloud;
   //typedef pcl::PolygonMesh PMesh;
 
+
+  
+  
   TriangleMeshNode()
   {
 
-    pub_ = nh_.advertise<sensor_msgs::PointCloud2>("pcl_meshtriangle",1); // set tpoic name to publish
-    // set topic name from receive, 'pf_out' - passthrough filter, 'cloud_pcd' - from file, 'point_cloud_in' - camera live feed
-    sub_ = nh_.subscribe ("cloud_pcd", 1,  &TriangleMeshNode::cloudCallback, this); 
+    pub_ = nh_.advertise<pcl_msgs::PolygonMesh>("pcl_meshtriangle",1); // set tpoic name to publish
+    // set topic name from receive, 'pf_out' - passthrough filter, 'cloud_pcd' - from file, not good, 'orig_cloud_pcd', 'point_cloud_in' - camera live feed
+    sub_ = nh_.subscribe ("orig_cloud_pcd", 1,  &TriangleMeshNode::cloudCallback, this); 
     
            // "~" means, that the node hand is opened within the private namespace (to get the "own" paraemters)
     ros::NodeHandle private_nh("~");
@@ -57,6 +70,8 @@ public:
     //pcl::fromPCLPointCloud2 (cloud_blob, *cloud);
     pcl::fromPCLPointCloud2 (cloud_in, *cloud);
     //* the data should be available in cloud
+
+    //pub_.publish(cloud_in);
 
     // Normal estimation*
     pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> n;
@@ -97,17 +112,24 @@ public:
     gp3.setInputCloud (cloud_with_normals);
     gp3.setSearchMethod (tree2);
     gp3.reconstruct (triangles);
-    pcl::io::saveVTKFile("/home/szilard/catkin_ws/src/pcl_tutorial/src/mesh.vtk", triangles); 
+    pcl::io::saveVTKFile("/home/cuda/catkin_ws/src/pcl_tutorial/src/mesh.vtk", triangles); 
     // Additional vertex information
     std::vector<int> parts = gp3.getPartIDs();
     std::vector<int> states = gp3.getPointStates();
-  
-    sensor_msgs::PointCloud2 output;
-    pcl_conversions::fromPCL( triangles.cloud, output );
-    pub_.publish(output);
-
     
+    //publish PointCloud2
+    /*sensor_msgs::PointCloud2 output;
+    pcl_conversions::fromPCL( triangles.cloud, output );
+    pub_.publish(output);*/
+
+    //publish PolygonMesh
+    pcl_msgs::PolygonMesh pcl_msg_mesh;
+    pcl_conversions::fromPCL(triangles, pcl_msg_mesh);
+    pub_.publish(pcl_msg_mesh);
+
   }
+
+  
 
 private:
   ros::NodeHandle nh_;
